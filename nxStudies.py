@@ -4,12 +4,16 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
+plot_mode = False
+
 class PowerNode(object):
-    def __init__(self, an_int):
+    def __init__(self, an_int, power_level=0.0):
         self.id = an_int
-        self.power = 0.0
+        self.power = power_level
 
     def __repr__(self):
+        if plot_mode:
+            return str(self.id)
         return "{0} pow={1:0.2f}  ".format(self.id, self.power)
 
 class PowerEdge(object):
@@ -21,6 +25,8 @@ class PowerEdge(object):
         self.end_node = end_node
 
     def __repr__(self):
+        if plot_mode:
+            return str(self.flow)
         return "id>{0}=flow:{1}  {2} to {3}".format(self.id, self.flow,
                 self.start_node.id, self.end_node.id)
 
@@ -69,8 +75,8 @@ for e in all_edges:
 all_edges = list(g.edges.data(data=True))
 all_power_edges = [e[2]['instance'] for e in all_edges]
 
-nx.draw(g)
-plt.show()
+# nx.draw(g)
+# plt.show()
 
 for _, first_node in g.nodes(data=True):
     dbg = True
@@ -82,3 +88,30 @@ What am I trying to do here? I am trying to come up with a random network
 which has sources and sinks where I can compute flows. So that is next (in
 my spare time).
 '''
+
+simpleFlowNet = nx.DiGraph()
+
+n1 = PowerNode(1, -1.0)
+simpleFlowNet.add_node(n1)
+n2 = PowerNode(2, -2.0)
+simpleFlowNet.add_node(n2)
+n3 = PowerNode(3, +3.0)
+simpleFlowNet.add_node(n3)
+
+e1 = PowerEdge(1, n1, n2)
+simpleFlowNet.add_edge(n1, n2, instance=e1)
+e2 = PowerEdge(2, n2, n3)
+simpleFlowNet.add_edge(n2, n3, instance=e2)
+e3 = PowerEdge(3, n3, n1)
+simpleFlowNet.add_edge(n3, n1, instance=e3)
+
+plot_mode = True
+pos=nx.spring_layout(simpleFlowNet)
+nx.draw(simpleFlowNet, with_labels=True, pos=pos)
+nx.draw_networkx_edge_labels(simpleFlowNet, pos=pos)
+plt.show()
+
+# Next: Convert simpleFlowNet into a linear algebra matrix and solve
+# for flows.
+
+
